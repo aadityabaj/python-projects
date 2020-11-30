@@ -1,230 +1,237 @@
 from tkinter import *
-from tkinter import filedialog
-from PIL import Image, ImageTk, ImageDraw, ImageFont
+from tkinter import messagebox
+import _sqlite3
 
-root = Tk()
+# table main window = usernameandpassword
+# creating a database
+connection = _sqlite3.connect('usernandpass.db')
+# creating a cursor
+cursr = connection.cursor()
 
-root.geometry(("1080x800"))
-root.title("AJ")
+mainscreen = Tk()
+username = ""
+password = ""
 
-get_pos = Entry(bg="lightblue", width=45)
+mainscreen.geometry("400x300")
+mainscreen.resizable(False, False)
+mainscreen.title("PASSWORD STORAGE")
+mainscreen.iconbitmap("shield.png")
+mainscreen.configure(bg="darkslategray")
+disclaimer1 = Label(mainscreen, text='IF YOU USING ARE THIS FIRST TIME', bg="green2").place(x=100, y="10", anchor="c")
+disclaimer = Label(mainscreen, text="FIRST SAVE USER NAME AND PASSWORD", bg="green2").place(x=116, y="32", anchor="c")
 
-get_pos.grid(row=1, column=0)
+uni_username = Entry(bg="black", fg="gold")
 
-root.configure(bg="cyan")
+uni_username.place(x='200', y='100', anchor="c")
+uni_name_label = Label(mainscreen, text="USERNAME", bg='darkorange2', fg="gray1")
+uni_name_label.place(x="100", y="100", anchor="c")
 
-canvas1 = Canvas(root, width=400, height=400)
-canvas1.grid(row=2, column=0)
-
-
-def op_imag():
-    text = filedialog.askopenfilename()
-    image_loc = get_pos.insert(0, text)
-
-    image = Image.open(text)
-    image = image.resize((400, 400), Image.ANTIALIAS)
-    img = ImageTk.PhotoImage(image)
-    image_lab = Label(root, image=img)
-    Label.image = img
-    image_lab.grid(row=2, column=0)
-
-
-show_det = False
-
-
-def show_info():
-    global get_pos
-    image_loc = get_pos.get()
-
-    image = Image.open(image_loc)
-    show_det = True
-    print(image.size)
-    if show_det == True:
-        show_in = Label(root, text=(image.size)).place(x=530, y=30, anchor="c")
+uni_pass = Entry(bg="black", fg="gold")
+uni_pass.place(x="200", y="130", anchor="c")
+uni_pass_label = Label(mainscreen, text="PASSWORD", bg='darkorange2')
+uni_pass_label.place(x="100", y="130", anchor="c")
+show_form = False
 
 
-crop_the_img = False
-left = Entry(bg="darkslategrey", width=4)
+def show_new_user_window():
+    global uni_username
 
-left_label = Label(root, text="left")
-top = Entry(bg="darkslategrey", width=4)
+    userwindow = Tk()
+    userwindow.geometry("550x450")
+    userwindow.resizable(False, False)
+    userwindow.title(uni_username.get())
+    username1 = uni_username.get()
 
-top_label = Label(root, text="top")
-right = Entry(bg="darkslategrey", width=4)
+    cursr.execute(f"SELECT rowid, * FROM {username1} ")
+    sites_name = (cursr.fetchall())
+    print(sites_name)
+    l_b1 = Listbox(userwindow, width=70)
+    l_b1.place(x=260, y=200, anchor="c")
+    for sites in sites_name:
+        l_b1.insert(END, str(sites[0]) + "        " + str(sites[1]) + "        " + str(sites[2]) + "        " + str(
+            sites[3]))
 
-right_label = Label(root, text="RIGHT")
-bottom = Entry(bg="darkslategrey", width=4)
+    def create_id():
+        global site_e
+        global site_l
+        global n_u_name_l
+        global n_u_name_e
+        global n_u_p_l
+        global n_u_p_e
+        global save_id
 
-BOTTOM_label = Label(root, text="BOTTOM")
+        site_l = Label(userwindow, text="site name ")
+        site_l.place(x=36, y=100, anchor='c')
+        site_e = Entry(userwindow, width=14)
+        site_e.place(x=112, y=100, anchor="c")
+        n_u_name_l = Label(userwindow, text="id or username")
+        n_u_name_l.place(x=202, y=100, anchor="c")
+        n_u_name_e = Entry(userwindow, width=15)
+        n_u_name_e.place(x=292, y=100, anchor='c')
+        n_u_p_l = Label(userwindow, text="password")
+        n_u_p_l.place(x=370, y=100, anchor="c")
+        n_u_p_e = Entry(userwindow, width=15)
+        n_u_p_e.place(x=450, y=100, anchor="c")
+        save_id = Button(userwindow, text="save it", command=save_new_form)
+        save_id.place(x=520, y=100, anchor="c")
+        row_id_f_delete.place_forget()
+        row_id_l.place_forget()
+        delete_but.place_forget()
 
+    def save_new_form():
 
-def crop():
-    global crop_the_img
-    crop_the_img = True
-    # if crop_the_img == True:
-    crop_it = Button(root, text="crop it", command=crop_img).place(x=840, y=52.5, anchor="c")
-    left_label.place(x=520.5, y=52.5, anchor="c")
-    top_label.place(x=590.5, y=52.5, anchor="c")
-    right_label.place(x=660.5, y=52.5, anchor="c")
-    BOTTOM_label.place(x=750.5, y=52.5, anchor="c")
-    left.place(x=550.5, y=52.5, anchor="c")
-    top.place(x=620.5, y=52.5, anchor="c")
-    right.place(x=700.5, y=52.5, anchor="c")
-    bottom.place(x=795.5, y=52.5, anchor="c")
+        global uni_username
+        global user_and_pass
 
+        username1 = uni_username.get()
+        print(username1)
+        site_name = site_e.get()
+        user_id = n_u_name_e.get()
+        user_password = n_u_p_e.get()
 
-def crop_img():
-    image_loc = get_pos.get()
-    image = Image.open(image_loc)
-    crop_image = image.crop((int(left.get()), (int(top.get())), (int(bottom.get())), (int(right.get()))))
-    image = crop_image.resize((400, 400), Image.ANTIALIAS)
-    img = ImageTk.PhotoImage(image)
-    lab = Label(root, image=img)
-    Label.image = img
-    lab.grid(row=2, column=0)
+        cursr.execute(f"INSERT INTO {username1} (site_name,user_id,user_password) VALUES (?,?,?)",
+                      (site_name, user_id, user_password))
 
+        connection.commit()
+        cursr.execute(f"SELECT rowid, * FROM {username1} ")
+        sites_name = (cursr.fetchall())
+        print(sites_name)
+        l_b1 = Listbox(userwindow, width=70)
+        l_b1.place(x=260, y=200, anchor="c")
+        for sites in sites_name:
+            l_b1.insert(END, str(sites[0]) + "        " + str(sites[1]) + "        " + str(sites[2]) + "        " + str(
+                sites[3]))
 
-flip_lr = False
-flip_tb = False
+        site_e.place_forget()
+        site_l.place_forget()
+        n_u_p_e.place_forget()
+        n_u_p_l.place_forget()
+        n_u_name_e.place_forget()
+        n_u_name_l.place_forget()
+        save_id.place_forget()
+        row_id_f_delete.place_forget()
+        row_id_l.place_forget()
+        delete_but.place_forget()
 
+    def delete_a_id():
+        global row_id_f_delete
+        global row_id_l
+        global delete_but
 
-def flip_img():
-    global flip_img1
-    flip_img1 = True
-    if flip_img1 == True:
-        L_t_R = Button(frame1, text="LEFT TO RIGHT", bg="Red", command=flip_left_to_Right).place(x=550, y=78.5,
-                                                                                                 anchor='c')
+        row_id_f_delete = Entry(userwindow)
+        row_id_f_delete.place(x=140, y=100, anchor="c")
+        row_1 = row_id_f_delete.get()
 
-        T_t_B = Button(frame1, text="TOP TO BOTTOM", bg="red", command=flip_top_to_bottom).place(x=650, y=78.5,
-                                                                                                 anchor='c')
-        sv_l_t_r = Button(frame1, text="save", bg="red", command=save_flip_left_to_right).place(x=730, y=78.5,
-                                                                                                anchor='c')
+        def delete_it():
+            if int(row_id_f_delete.get()) >= 10:
+                cursr.execute(f"DELETE FROM {username2} WHERE  rowid = {row_id_f_delete.get()} ")
+            elif int(row_id_f_delete.get()) <= 9:
+                cursr.execute(f"DELETE FROM {username2} WHERE  rowid =? ", (row_id_f_delete.get()))
+            connection.commit()
 
+            cursr.execute(f"SELECT rowid, * FROM {username2} ")
+            sites_name = (cursr.fetchall())
+            print(sites_name)
+            l_b2 = Listbox(userwindow, width=70)
+            l_b2.place(x=260, y=200, anchor="c")
 
-def flip_left_to_Right():
-    global flip_lr
-    flip_lr = True
-    image_loc = get_pos.get()
-    image = Image.open(image_loc)
-    flipedimage = image.transpose(Image.FLIP_LEFT_RIGHT)
-    image = flipedimage.resize((400, 400), Image.ANTIALIAS)
-    img = ImageTk.PhotoImage(image)
-    lab2 = Label(root, image=img)
-    Label.image = img
-    lab2.grid(row=2, column=0)
+            for sites in sites_name:
+                l_b2.insert(END,
+                            str(sites[0]) + "        " + str(sites[1]) + "        " + str(sites[2]) + "        " + str(
+                                sites[3]))
 
+        row_id_l = Label(userwindow, text="Row id ")
+        row_id_l.place(x=20, y=100, anchor="c")
 
-def flip_top_to_bottom():
-    global flip_tb
-    flip_tb = True
-    image_loc = get_pos.get()
-    image = Image.open(image_loc)
-    flipedimage1 = image.transpose(Image.FLIP_TOP_BOTTOM)
-    image = flipedimage1.resize((400, 400), Image.ANTIALIAS)
-    img = ImageTk.PhotoImage(image)
-    lab3 = Label(root, image=img)
-    Label.image = img
-    lab3.grid(row=2, column=0)
+        delete_but = Button(userwindow, text="delete", command=delete_it)
+        delete_but.place(x=200, y=100, anchor="c")
+        username2 = uni_username.get()
 
+        cursr.execute(f"SELECT rowid, * FROM {username2} ")
+        sites_name = (cursr.fetchall())
 
-def save_flip_left_to_right():
-    global flip_lr
-    global flip_tb
-    if flip_lr == True:
-        save_Loc = filedialog.asksaveasfile(defaultextension='.jpg')
-        image_loc = get_pos.get()
-        image = Image.open(image_loc)
-        flipedimage = image.transpose(Image.FLIP_LEFT_RIGHT)
-        save_flip_l_t_r = flipedimage.save(save_Loc)
-    if flip_tb == True:
-        save_Loc1 = filedialog.asksaveasfile(defaultextension='.jpg')
-        image_loc = get_pos.get()
-        image = Image.open(image_loc)
-        flipedimage1 = image.transpose(Image.FLIP_TOP_BOTTOM)
-        save_flip_tb = flipedimage1.save(save_Loc1)
+        l_b2 = Listbox(userwindow, width=70)
+        l_b2.place(x=260, y=200, anchor="c")
 
+        for sites in sites_name:
+            l_b2.insert(END, str(sites[0]) + "        " + str(sites[1]) + "        " + str(sites[2]) + "        " + str(
+                sites[3]))
 
-watermark_activate = False
-get_codx = Entry(width=4)
-get_cody = Entry(width=4)
-get_text_for_waterm = Entry(width=10)
-get_the_height_of_text = Entry(width=3)
+        global site_e
+        site_e.place_forget()
+        site_l.place_forget()
+        n_u_p_e.place_forget()
+        n_u_p_l.place_forget()
+        n_u_name_e.place_forget()
+        n_u_name_l.place_forget()
+        save_id.place_forget()
 
-
-def create_wartermark():
-    global watermark_activate
-    global get_codx
-    global get_cody
-    watermark_activate = True
-    global get_the_height_of_text
-    if watermark_activate == True:
-        create_WM = Button(frame1, text="create", command=create, bg="red").place(x=900, y=104.5, anchor='c')
-        height_of_text = Label(root, text="height of text").place(x=800, y=104.5, anchor="c")
-        save_watermark_ori_button = Button(frame1, text="save it", bg="red", command=save_watermark_asoriginal).place(
-            x=960,
-            y=104.5,
-            anchor="c")
-        watermark_text = Label(root, text="text").place(x=540.5, y=104.5, anchor="c")
-
-        co_od = Label(root, text="cordinates").place(x=660.5, y=104.5, anchor="c")
-        get_the_height_of_text.place(x=860, y=104.5, anchor="c")
-        get_codx.place(x=710, y=104.5, anchor='c')
-        get_cody.place(x=740, y=104.5, anchor='c')
-        get_text_for_waterm.place(x=590, y=104.5, anchor='c')
-
-
-def create():
-    image = Image.open(get_pos.get())
-    drawimg = ImageDraw.Draw(image)
-    text = get_text_for_waterm.get()
-    font = ImageFont.truetype('arial.ttf', int(get_the_height_of_text.get()))
-    drawimg.text((int(get_codx.get()), int(get_cody.get())), text, fill=(255, 255, 255), font=font)
-    image = image.resize((400, 400), Image.ANTIALIAS)
-    img = ImageTk.PhotoImage(image)
-    lab3 = Label(root, image=img)
-    Label.image = img
-    lab3.grid(row=2, column=0)
+    create_new_id = Button(userwindow, text="create a new id ", command=create_id)
+    create_new_id.place(x=80, y=30, anchor="c")
+    delete_id = Button(userwindow, text="delete id ", command=delete_a_id)
+    delete_id.place(x=170, y=30, anchor="c")
+    userwindow.configure(bg="cyan")
+    userwindow.mainloop()
 
 
-def save_watermark_asoriginal():
-    save = filedialog.asksaveasfile(defaultextension=".jpg")
-    image = Image.open(get_pos.get())
-    drawimg = ImageDraw.Draw(image)
-    text = get_text_for_waterm.get()
-    font = ImageFont.truetype('arial.ttf', int(get_the_height_of_text.get()))
-    drawimg.text((int(get_codx.get()), int(get_cody.get())), text, fill=(255, 255, 255), font=font)
-    sv_img = image.save(save)
+def save_uni_ones():
+    global uni_username
+    global uni_pass
+    global save_butt
+    global username
+    global password
+    global usern
+    global userpass
+    global cursr
+    username = uni_username.get()
+    password = uni_pass.get()
+
+    if password == "" and username == "":
+        messagebox.showerror("alert", "please enter username and password ")
+    elif password == "":
+        messagebox.showerror("alert", "please enter password")
+    elif username == "":
+        messagebox.showerror("alert", "please enter username")
+
+    cursr.execute("INSERT INTO usernameandpassword   (username,password) VALUES (?,?)",
+                  (username, password))
+
+    connection.commit()
+    cursr.execute("SELECT * FROM usernameandpassword")
+    table_name = cursr.fetchall()
+
+    cursr.execute(f"""CREATE TABLE IF NOT EXISTS {username}   ( 
+                site_name text,
+                user_id text,
+                user_password text)""")
 
 
-conver = True
+def login_in():
+    global uni_pass
+    global uni_username
+    global user_and_pass
+    print(uni_username.get())
+    print(uni_pass.get())
+
+    cursr.execute("SELECT rowid ,* FROM usernameandpassword")
+    user_and_pass = (cursr.fetchall())
+
+    for users in user_and_pass:
+
+        u_name = (users[1])
+        u_pass = (users[2])
+
+        if uni_username.get() == u_name and uni_pass.get() == u_pass:
+            show_new_user_window()
+
+    uni_username.delete(0, "end")
+    uni_pass.delete(0, "end")
 
 
-def convert_img():
-    global conver
-    conver = True
-    if conver == True:
-        sav_as_gif = Button(root, text="save as GIF", bg="Red",command=save_as_gif).place(x=540, y=134, anchor="c")
+save_uni_pass_and_name = Button(mainscreen, text="Save", command=save_uni_ones, padx=30, bg="blue2", fg="gold").place(
+    x=113, y=170, anchor="c")
+login_butt = Button(mainscreen, text="Login", padx=30, command=login_in, bg="blue2", fg="gold").place(x=213, y=170,
+                                                                                                      anchor="c")
+connection.commit()
 
-
-def save_as_gif():
-    sve = filedialog.asksaveasfile(defaultextension=".png")
-    image_loc = get_pos.get()
-
-    sc = image_loc.save(sve)
-
-
-frame1 = LabelFrame(root, text="this frame", padx=100, pady=50, borderwidth=10).grid(padx=40, pady=40)
-
-open_img = Button(frame1, text="loadimage", command=op_imag, bg="lightseagreen", pady=1).place(x=370, y=27, anchor="c")
-show_img_info = Button(frame1, text="show info ", bg="red", command=show_info).place(x=439.5, y=30, anchor="c")
-#exitbutton = Button(frame1, text="exit", bg="red", command=root.quit, padx=20).grid(row=5, column=0)
-crop_button = Button(frame1, text="crop", bg='red', command=crop, padx=30).place(x=450.5, y=52.5, anchor="c")
-flip_image = Button(frame1, text="flip image", bg="red", command=flip_img, padx=15).place(x=451.5, y=78.5, anchor="c")
-watermarker = Button(frame1, text="create a watermark", bg="red", command=create_wartermark).place(x=459.5, y=104.5,
-                                                                                                   anchor="c")
-convert = Button(frame1, text="convert image", bg="red", command=convert_img).place(x=450, y=134, anchor="c")
-
-# entertheimagelocationlabel
-enter_loc_label = Label(root, text="ENTER THE IMAGE LOCATION", bg="limegreen", fg="black").grid(row=0, column=0)
-
-root.mainloop()
+mainscreen.mainloop()
